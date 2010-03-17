@@ -11,6 +11,7 @@ class TwitterXmlImporter
     "created_at" => :authored_on,
     "user/screen_name" => :from,
     "geo" => :location,
+    "id" => :twitter_id,
   }
 
   XmlDataTransformerMap = {
@@ -18,6 +19,7 @@ class TwitterXmlImporter
     :authored_on => :parse_rfc2822_time,
     :from => :passthrough,
     :location => :parse_latlng,
+    :twitter_id => :parse_integer
   }
 
   def xml_header_map
@@ -39,6 +41,7 @@ class TwitterXmlImporter
   def xml_add_fields(item)
     item[:format] = Message::PlainTextFormat
     item[:tags] = [Tag.new(:name => "Twitter", :type => Tag::SourceType)]
+    item[:original_uri] = "http://twitter.com/#{item[:from]}/status/#{item[:twitter_id]}"
     item
   end
 
