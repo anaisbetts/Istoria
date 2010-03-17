@@ -66,9 +66,28 @@ class Event
   end
 end
 
+module TextSupport
+
+  # Format constants
+  PlainTextFormat = 1
+  MarkdownFormat = 2
+  HtmlFormat = 3
+  MaximumFormatValue = 4
+
+  def format_sym
+    return :plain_text if self.format == PlainTextFormat
+    return :markdown if self.format == MarkdownFormat
+    return :html if self.format == HtmlFormat
+    :unknown
+  end
+end
+
 class Message < Event
+  include TextSupport
+
   key :from, String
   key :to, String
+  key :title, String
   key :text, String
   key :format, Integer
 
@@ -79,29 +98,21 @@ class Message < Event
 
   #ensure_index :from, :to
 
-  # Format constants
-  PlainTextFormat = 1
-  MarkdownFormat = 2
-  HtmlFormat = 3
-  MaximumFormatValue = 4
-
   def content_hash
     Digest::SHA1.hexdigest((self.from || "") + (self.to || "") + self.text)
-  end
-
-  def format_sym
-    return :plain_text if self.format == PlainTextFormat
-    return :markdown if self.format == MarkdownFormat
-    return :html if self.format == HtmlFormat
-    :unknown
   end
 end
 
 class Media < Event
+  include TextSupport
+
   plugin Grip
+
+  key :text
+  key :format
   attachment :data 
  
   def content_hash
-    data_hash
+    Digest::SHA1.hexdigest(data_hash + (text || ""))
   end
 end

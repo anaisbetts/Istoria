@@ -98,7 +98,7 @@ module Istoria
         doc = open_file_or_url(target)
         items = doc.xpath("//#{self.xml_item_nodename}")
 
-        return self.xml_header_map.keys.all? {|k| items.xpath(k).count > 0}
+        return self.xml_header_map.keys.all? {|k| not items.xpath(k).empty? }
       rescue
         p $!.message
         return false
@@ -120,8 +120,9 @@ module Istoria
       end
     end
 
-  private
-    def open_file_or_url(target)
+    def self.open_file_or_url(target)
+      return target if target.respond_to? :xpath
+
       doc = nil
       if (target.starts_with? "http")
         doc = Nokogiri::XML(open(target))

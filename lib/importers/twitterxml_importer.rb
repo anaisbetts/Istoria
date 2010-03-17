@@ -22,6 +22,10 @@ class TwitterXmlImporter
     :twitter_id => :parse_integer
   }
 
+  def xml_item_nodename
+    "status"
+  end
+
   def xml_header_map
     XmlHeaderMap
   end
@@ -32,10 +36,6 @@ class TwitterXmlImporter
 
   def xml_event_class
     Message
-  end
-
-  def xml_item_nodename
-    "status"
   end
 
   def xml_add_fields(item)
