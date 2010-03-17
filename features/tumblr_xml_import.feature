@@ -39,5 +39,5 @@ Feature: Tumblr XML Import
 
 	Scenario: Duplicate detection
 		Given I'm using the tumblr_basic.xml fixture
-		When I import Twitter XML into Mongo 2 times
+		When I import Tumblr XML into Mongo 2 times
 		Then I should have 20 Message entries

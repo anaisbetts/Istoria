@@ -21,7 +21,6 @@ Then /^every Event entry should have an original URL$/ do
 end
 
 Then /^(\d+) of the Events should be Geotagged$/ do |n|
-  p Message.all.map {|x| x.location}
   Message.all.count {|x| not x.location.empty?}.should == n.to_i
 end
 
@@ -35,15 +34,15 @@ end
 ##
 
 Then /^every Message entry should have text$/ do
-    pending # express the regexp above with the code you wish you had
+  Message.all.each {|x| x.text.should_not != nil}
 end
 
 Then /^we should able to read the plain text of HTML Message entries$/ do
-    pending # express the regexp above with the code you wish you had
+  Message.find(:format => TextSupport::HtmlFormat).each {|x| x.plain_text.should_not != nil}
 end
 
 Then /^we should able to read the plain text of Markdown Message entries$/ do
-    pending # express the regexp above with the code you wish you had
+  Message.find(:format => TextSupport::MarkdownFormat).each {|x| x.plain_text.should_not != nil}
 end
 
 Then /^I should have (\d+) Message entries$/ do |n|
@@ -51,7 +50,7 @@ Then /^I should have (\d+) Message entries$/ do |n|
 end
 
 Then /^every Message entry should have the format set correctly$/ do
-    pending # express the regexp above with the code you wish you had
+  pending # express the regexp above with the code you wish you had
 end
 
 

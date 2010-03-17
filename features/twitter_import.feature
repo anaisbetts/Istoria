@@ -7,5 +7,5 @@ Feature: Twitter Import
 		When I import Twitter site data into Mongo 1 time
 		Then I should have 79 Message entries
 		And some of the Messages should be Geotagged
-		And the Message geotags shouldn't be garbage
+		And the Event geotags shouldn't be garbage
 		And every Event entry should have a Source tag
