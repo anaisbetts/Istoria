@@ -95,7 +95,7 @@ module Istoria
   module XmlImportImplementation
     def can_import?(target)
       begin
-        doc = open_file_or_url(target)
+        doc = XmlImportImplementation.open_file_or_url(target)
         items = doc.xpath("//#{self.xml_item_nodename}")
 
         return self.xml_header_map.keys.all? {|k| not items.xpath(k).empty? }
@@ -106,7 +106,7 @@ module Istoria
     end
 
     def import(target)
-      doc = open_file_or_url(target)
+      doc = XmlImportImplementation.open_file_or_url(target)
 
       items = doc.xpath("//#{self.xml_item_nodename}")
       ret = items.map do |node|

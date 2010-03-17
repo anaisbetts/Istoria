@@ -1,4 +1,5 @@
 require 'types'
+require 'importers'
 require 'pathname'
 require 'nokogiri'
 require 'open-uri'

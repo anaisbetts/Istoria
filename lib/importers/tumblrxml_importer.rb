@@ -1,7 +1,10 @@
 require 'types'
+require 'importers'
 require 'pathname'
 require 'nokogiri'
 require 'open-uri'
+
+include Istoria
 
 class TumblrXmlImporter
   def can_import?(target)
@@ -19,7 +22,7 @@ class TumblrXmlImporter
     ret = []
     doc = XmlImportImplementation.open_file_or_url(target)
 
-    ret += (new TumblrQuoteParser).import(doc)
+    ret += (TumblrQuoteParser.new).import(doc)
   end
 end
 
@@ -27,11 +30,11 @@ class TumblrQuoteParser
   include Istoria::XmlImportImplementation
 
   XmlHeaderMap = {
-    "quote-text" => :text,
-    "@format" => :format
-    "@url-with-slug" => :original_uri,
-    "@date-gmt" => :authored_on,
-    "quote-source" => :title,
+    'quote-text' => :text,
+    '@format' => :format,
+    '@url-with-slug' => :original_uri,
+    '@date-gmt' => :authored_on,
+    'quote-source' => :title,
   }
 
   XmlDataTransformerMap = {
