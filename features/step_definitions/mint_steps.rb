@@ -5,16 +5,14 @@ $:.unshift(File.join(File.dirname(__FILE__), "..", "..", "lib"))
 
 require 'importers/mint_importer'
 
-Before do
-  Mongo::Connection.new().db('istoria-test-mint')
-  MongoMapper.database = 'istoria-test-mint'
-end
-
 After do
   Mongo::Connection.new().drop_database 'istoria-test-mint'
 end
 
 When /^I import Mint CSV into Mongo (\d+) times?$/ do |n|
+  Mongo::Connection.new().db('istoria-test-mint')
+  MongoMapper.database = 'istoria-test-mint'
+
   (n.to_i).times do
     @mi = MintImporter.new
     raise "Can't import!" unless @mi.can_import?(@file)

@@ -47,6 +47,8 @@ end
 
 Then /^I should have (\d+) Message entries$/ do |n|
   Message.all.count.should == n.to_i
+  #p "Pause motherfucker!"
+  #STDIN.readline
 end
 
 Then /^every Message entry should have the format set correctly$/ do

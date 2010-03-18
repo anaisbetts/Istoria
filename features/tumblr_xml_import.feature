@@ -11,7 +11,7 @@ Feature: Tumblr XML Import
 	Scenario: Correct information functionality
 		Given I'm using the tumblr_text.xml fixture
 		When I import Tumblr XML into Mongo 1 time
-		Then I should have 50 Message entries
+		Then I should have 2 Message entries
 		And every Event entry should have an original URL
 		And every Event entry should have a Source tag
 		And every Message entry should have text
