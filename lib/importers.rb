@@ -96,7 +96,7 @@ module Istoria
     def can_import?(target)
       begin
         doc = XmlImportImplementation.open_file_or_url(target)
-        items = doc.xpath("//#{self.xml_item_nodename}")
+        items = doc.xpath(self.xml_item_nodename)
 
         return self.xml_header_map.keys.all? {|k| not items.xpath(k).empty? }
       rescue
@@ -104,6 +104,8 @@ module Istoria
         return false
       end
     end
+
+    def xml_custom_node_parse(node, item); item; end
 
     def import(target)
       doc = XmlImportImplementation.open_file_or_url(target)
@@ -116,7 +118,8 @@ module Istoria
           current[v] = self.class.send(self.xml_data_transformer_map[v], data)
         end
 
-        xml_event_class.create(xml_add_fields(current))
+        current = self.xml_custom_node_parse(node, current)
+        self.xml_event_class.create(self.xml_add_fields(current))
       end
     end
 
