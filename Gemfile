@@ -1,4 +1,5 @@
 source :gemcutter
 
-gem "mongo-mapper"
+gem "mongo_mapper"
+gem "sunspot"
 gem "cucumber"
