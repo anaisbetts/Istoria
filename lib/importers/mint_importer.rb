@@ -45,6 +45,10 @@ class MintEvent < Event
   end
 end
 
+Sunspot.setup(MintEvent) do
+  text :mint_description
+end
+
 class MintImporter
   include Istoria::CsvImportImplementation
 

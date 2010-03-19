@@ -45,6 +45,7 @@ class TumblrXmlImporter
     ret += (TumblrQuoteOrTextParser.new).import(doc)
     ret += (TumblrLinkParser.new).import(doc)
     ret += (TumblrConversationParser.new).import(doc)
+    ret += (TumblrPhotoParser.new).import(doc)
     ret
   end
 end
@@ -59,6 +60,53 @@ module TumblrParsers
   end
 end
 
+class TumblrPhotoParser
+  include Istoria::XmlImportImplementation
+
+  XmlHeaderMap = {
+    'photo-caption'  => :text,
+    '@format' => :format,
+    '@url-with-slug' => :original_uri,
+    'photo-link-url' => :tumblr_link,
+    '@date-gmt' => :authored_on,
+    '@type' => :tumblr_type,
+  }
+
+  XmlDataTransformerMap = {
+    :text => :passthrough,
+    :format => :parse_tumblr_format,
+    :original_uri => :passthrough,
+    :tumblr_link => :passthrough,
+    :authored_on => :parse_rfc2822_time,
+    :tumblr_type => :passthrough,
+  }
+
+  def xml_header_map; XmlHeaderMap; end
+  def xml_data_transformer_map; XmlDataTransformerMap; end
+  def xml_event_class; Media; end
+
+  def xml_item_nodename
+    "//post[@type='photo']"
+  end
+
+  def xml_custom_node_parse(node, item)
+    uri = node.xpath("photo-url[@max-width='1280']").text
+    item.data = open(uri)
+    item.save
+    item
+  end
+
+  def xml_add_fields(item)
+    item[:tags] = [Tag.new(:name => "Tumblr", :type => Tag::SourceType)]
+    item[:text] = item[:original_uri]
+    item
+  end
+  
+  class << self
+    include TumblrParsers
+  end
+end
+
 class TumblrConversationParser
   include Istoria::XmlImportImplementation
 
@@ -67,6 +115,7 @@ class TumblrConversationParser
     '@format' => :format,
     '@url-with-slug' => :original_uri,
     '@date-gmt' => :authored_on,
+    '@type' => :tumblr_type,
   }
 
   XmlDataTransformerMap = {
@@ -74,6 +123,7 @@ class TumblrConversationParser
     :format => :parse_tumblr_format,
     :original_uri => :passthrough,
     :authored_on => :parse_rfc2822_time,
+    :tumblr_type => :passthrough,
   }
   
   NewLineForFormat = {
@@ -96,12 +146,13 @@ class TumblrConversationParser
     end
 
     item[:text] = lines.join("\n")
+    item.save
     item
   end
 
   def xml_add_fields(item)
     item[:tags] = [Tag.new(:name => "Tumblr", :type => Tag::SourceType)]
-    item[:original_uri] = "http://twitter.com/#{item[:from]}/status/#{item[:twitter_id]}"
+    item[:text] = item[:original_uri]
     item
   end
   
@@ -119,6 +170,7 @@ class TumblrLinkParser
     'link-url' => :original_uri,
     '@date-gmt' => :authored_on,
     'link-description' => :text,
+    '@type' => :tumblr_type,
   }
 
   XmlDataTransformerMap = {
@@ -127,6 +179,7 @@ class TumblrLinkParser
     :original_uri => :passthrough,
     :authored_on => :parse_rfc2822_time,
     :text => :passthrough,
+    :tumblr_type => :passthrough,
   }
 
   def xml_header_map; XmlHeaderMap; end
@@ -145,7 +198,6 @@ class TumblrLinkParser
     end
 
     item[:tags] = [Tag.new(:name => "Tumblr", :type => Tag::SourceType)]
-    item[:original_uri] = "http://twitter.com/#{item[:from]}/status/#{item[:twitter_id]}"
     item
   end
 
@@ -163,6 +215,7 @@ class TumblrQuoteOrTextParser
     '@url-with-slug' => :original_uri,
     '@date-gmt' => :authored_on,
     'quote-source | regular-title' => :title,
+    '@type' => :tumblr_type,
   }
 
   XmlDataTransformerMap = {
@@ -171,6 +224,7 @@ class TumblrQuoteOrTextParser
     :original_uri => :passthrough,
     :authored_on => :parse_rfc2822_time,
     :title => :passthrough,
+    :tumblr_type => :passthrough,
   }
 
   def xml_header_map; XmlHeaderMap; end
@@ -183,7 +237,6 @@ class TumblrQuoteOrTextParser
 
   def xml_add_fields(item)
     item[:tags] = [Tag.new(:name => "Tumblr", :type => Tag::SourceType)]
-    item[:original_uri] = "http://twitter.com/#{item[:from]}/status/#{item[:twitter_id]}"
     item
   end
 

@@ -65,6 +65,7 @@ module Grip
   end
 
   def self.hash_for_file(f)
+    return nil unless f
     hash_func = Digest::SHA1.new
     buf = nil
     

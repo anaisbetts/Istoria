@@ -21,6 +21,7 @@
 require 'mongo_mapper'
 require 'grip'
 require 'digest/sha1'
+require 'sunspot'
 
 class Tag
   include MongoMapper::EmbeddedDocument
@@ -57,6 +58,9 @@ class Event
   validates_presence_of :authored_on
   before_validation :save_content_hash
 
+  after_save :commit_to_solr
+  before_destroy :remove_from_solr
+
   def content_hash
     raise "Implement me!"
   end
@@ -64,6 +68,26 @@ class Event
   def save_content_hash
     self.saved_content_hash = content_hash
   end
+
+  def commit_to_solr
+    # FIXME: This causes the commit to be instaneous, which probably isn't what
+    # we actually want to do
+    Sunspot.index!(self)
+  end
+
+  def remove_from_solr
+    # FIXME: Ditto
+    Sunspot.remove!(self)
+  end
+end
+
+Sunspot.setup(Event) do
+  time :authored_on
+  text :original_uri
+
+  #string :tags do |event|
+  #  event.tags.map {|x| x.name}
+  #end 
 end
 
 module TextSupport
@@ -103,6 +127,13 @@ class Message < Event
   end
 end
 
+Sunspot.setup(Message) do
+  text :from
+  text :to
+  text :title
+  text :text
+end
+
 class Media < Event
   include TextSupport
 
@@ -113,6 +144,31 @@ class Media < Event
   attachment :data 
  
   def content_hash
-    Digest::SHA1.hexdigest(data_hash + (text || ""))
+    Digest::SHA1.hexdigest((data_hash || "") + (text || ""))
   end
+end
+
+Sunspot.setup(Media) do
+  text :text
+end
+
+class MongoInstanceAdapter < Sunspot::Adapters::InstanceAdapter
+  def id
+    @instance.id.to_s
+  end
+end
+
+class MongoDataAccessor < Sunspot::Adapters::DataAccessor
+    def load(id)
+      @class.find(Mongo::ObjectID.from_string(id))
+    end
+
+    def load_all(ids)
+      @clazz.find(ids.map{|x| Mongo::ObjectID.from_string(x)})
+    end
+end
+
+[Event, Message, Media].each do |the_type|
+  Sunspot::Adapters::InstanceAdapter.register(MongoInstanceAdapter, the_type)
+  Sunspot::Adapters::DataAccessor.register(MongoDataAccessor, the_type)
 end

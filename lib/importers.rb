@@ -118,8 +118,9 @@ module Istoria
           current[v] = self.class.send(self.xml_data_transformer_map[v], data)
         end
 
-        current = self.xml_custom_node_parse(node, current)
-        self.xml_event_class.create(self.xml_add_fields(current))
+        ret = self.xml_event_class.create(self.xml_add_fields(current))
+        self.xml_custom_node_parse(node, ret)
+        ret
       end
     end
 
