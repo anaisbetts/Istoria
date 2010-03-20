@@ -18,7 +18,9 @@ When /^I import Tumblr XML into Mongo (\d+) times?$/ do |n|
     raise "Can't import!" unless @ti.can_import? @file
     @ti.import @file
 
-    #p Message.all.map {|x| x.text}
+    stats = {}
+    Event.all.each {|x| stats[x[:tumblr_type]] = (stats[x[:tumblr_type]] || 0) + 1}
+    p stats
   end
 end
 

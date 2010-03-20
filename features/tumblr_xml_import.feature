@@ -4,7 +4,8 @@ Feature: Tumblr XML Import
 	Scenario: Basic functionality
 		Given I'm using the tumblr_basic.xml fixture
 		When I import Tumblr XML into Mongo 1 time
-		Then I should have 50 Message entries
+		Then I should have 44 Message entries
+		And I should have 6 Media entries
 		And every Event entry should have an original URL
 		And every Event entry should have a Source tag
 
@@ -22,22 +23,22 @@ Feature: Tumblr XML Import
 	Scenario: Youtube import
 		Given I'm using the tumblr_youtube.xml fixture
 		When I import Tumblr XML into Mongo 1 time
-		Then I should have 50 Media entries
+		Then I should have 2 Media entries
 		And the Media entries should have the downloaded Youtube file
 
 	Scenario: Audio import
-		Given I'm using the tumblr_youtube.xml fixture
+		Given I'm using the tumblr_audio.xml fixture
 		When I import Tumblr XML into Mongo 1 time
-		Then I should have 50 Media entries
+		Then I should have 1 Media entries
 		And the Media entries should have the downloaded audio file
 
 	Scenario: Photo import
 		Given I'm using the tumblr_photo.xml fixture
 		When I import Tumblr XML into Mongo 1 time
-		Then I should have 50 Media entries
+		Then I should have 1 Media entries
 		And the Media entries should have the downloaded photo
 
 	Scenario: Duplicate detection
 		Given I'm using the tumblr_basic.xml fixture
 		When I import Tumblr XML into Mongo 2 times
-		Then I should have 20 Message entries
+		Then I should have 50 Event entries

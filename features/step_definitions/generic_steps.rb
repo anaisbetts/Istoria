@@ -10,6 +10,14 @@ end
 ## Event steps
 ##
 
+Then /^I should have (\d+) Event entries$/ do |n|
+  Event.all.count.should == n.to_i
+end
+
+Then /^I should have more than (\d+) Event entries$/ do
+  pending # express the regexp above with the code you wish you had
+end
+
 Then /^every Event entry should have a Source tag$/ do
   Event.all.each do |x| 
     x.tags.any? {|t| t.type_sym == :source}.should == true
