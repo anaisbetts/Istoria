@@ -22,7 +22,10 @@ require 'types'
 require 'importers'
 
 class MintEvent < Event
+  include TextSupport
   key :text, String
+  key :format, Integer
+
   key :mint_description, String
   key :mint_orig_description, String
   key :mint_amount, Float
@@ -48,6 +51,9 @@ end
 Sunspot.setup(MintEvent) do
   text :mint_description
 end
+
+Sunspot::Adapters::InstanceAdapter.register(MongoInstanceAdapter, MintEvent)
+Sunspot::Adapters::DataAccessor.register(MongoDataAccessor, MintEvent)
 
 class MintImporter
   include Istoria::CsvImportImplementation

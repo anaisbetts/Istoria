@@ -20,6 +20,7 @@
 
 require 'types'
 require 'csv'
+require 'cgi'
 
 module Istoria
   module StandardParsers
@@ -45,6 +46,10 @@ module Istoria
 
     def parse_rfc2822_time(value)
       Time.parse(value)
+    end
+
+    def unescape_html(value)
+      CGI.unescapeHTML(value)
     end
   end
 

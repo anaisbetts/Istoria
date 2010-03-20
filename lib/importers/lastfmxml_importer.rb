@@ -19,46 +19,66 @@
 ###########################################################################
 
 require 'types'
+require 'importers'
 require 'pathname'
 require 'nokogiri'
 require 'open-uri'
-require 'importers/twitterxml_importer'
 
-class TwitterImporter
-  def initialize(options = {})
-    @opts = options
+class LastFmListen < Event
+  key :song_name, String
+  key :artist, String
+  key :play_count, Integer
+
+  key :image_key, Array
+
+  def content_hash
+    Digest::SHA1.hexdigest(self.artist + self.song_name + self.play_count)
   end
+end
 
-  def can_import?(name)
-    ti = TwitterXmlImporter.new
-    ti.can_import?(name_to_url(name, 0))
-  end
+Sunspot.setup(LastFmListen) do
+  text :name
+  text :artist
+end
 
-  def import(name)
-    since_id = @opts[:since_id] || 0
-    page = 1
-    ti = TwitterXmlImporter.new
+Sunspot::Adapters::InstanceAdapter.register(MongoInstanceAdapter, LastFmListen)
+Sunspot::Adapters::DataAccessor.register(MongoDataAccessor, LastFmListen)
 
-    while(ti.can_import?(name_to_url(name, page, since_id))) do
-      ti.import(name_to_url(name, page, since_id))
-      page += 1
-      break if @opts[:limit] and @opts[:limit] < page
-    end
+
+class LastFmXmlImporter
+  include Istoria::XmlImportImplementation
+
+  XmlHeaderMap = {
+    "url" => :original_uri,
+    "artist" => :artist,
+    "name" => :song_name,
+    "playcount" => :play_count,
+  }
+
+  XmlDataTransformerMap = {
+    :original_uri => :passthrough,
+    :artist => :unescape_html,
+    :song_name => :unescape_html,
+    :play_count => :parse_as_integer,
+  }
+
+  def xml_header_map; XmlHeaderMap; end
+  def xml_data_transformer_map; XmlDataTransformerMap; end
+  def xml_event_class; LastFmListen; end
+
+  def xml_item_nodename
+    "//track"
   end
 
   def xml_add_fields(item)
-    item[:tags] = [Tag.new(:name => "Twitter", :type => Tag::SourceType)]
+    item[:format] = Message::PlainTextFormat
+    item[:authored_on] = Time.now
+    item[:tags] = [Tag.new(:name => "last.fm", :type => Tag::SourceType)]
+    item[:original_uri] = "http://twitter.com/#{item[:from]}/status/#{item[:twitter_id]}"
     item
   end
 
-private
-
-  def name_to_url(name, page = 0, since_id = 0)
-    if (since_id > 0)
-      "http://api.twitter.com/1/statuses/user_timeline.xml?screen_name=#{name}&page=#{page}&since_id=#{since_id}"
-    else
-      "http://api.twitter.com/1/statuses/user_timeline.xml?screen_name=#{name}&page=#{page}"
-    end
+  class << self
+    include Istoria::StandardParsers
   end
-  
 end
