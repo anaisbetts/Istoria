@@ -1,3 +1,4 @@
+@fast @tumblr @import
 Feature: Tumblr XML Import
 	We should be able to import Tumblr XML data from the website
 

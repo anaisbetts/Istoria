@@ -1,3 +1,4 @@
+@slow @twitter @import
 Feature: Twitter Import
 	We should be able to import Twitter data directly from the website
 

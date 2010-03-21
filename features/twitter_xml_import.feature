@@ -1,3 +1,4 @@
+@fast @twitter @import
 Feature: Twitter XML Import
 	We should be able to import Twitter XML data from the website
 

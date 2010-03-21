@@ -1,3 +1,4 @@
+@fast
 Feature: Image cache feature
 	To store image data, we need a simple key-value storage to store off images in 
 	the database that aren't actually tracked events

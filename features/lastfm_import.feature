@@ -1,3 +1,4 @@
+@slow @lastfm @import
 Feature: last.fm import
 	We should be able to import last.fm data directly from the website
 

@@ -1,3 +1,4 @@
+@fast @mint @import
 Feature: Mint Import
 	We should be able to import Mint data from the website
 
