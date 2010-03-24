@@ -20,7 +20,7 @@
 #   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ###########################################################################
 
-$:.unshift File.join(File.dirname(__FILE__), "..", "lib")
+$:.unshift File.join(File.dirname(__FILE__), "..")
 
 # Standard library
 require 'rubygems'
@@ -29,8 +29,8 @@ require 'optparse'
 require 'optparse/time'
 
 # Istoria
-require 'types'
-require 'importers'
+require 'lib/types'
+require 'lib/importers'
 
 # Gettext hack
 def _(v); v; end
@@ -47,13 +47,19 @@ class IstoriaImportData < Logger::Application
 
 	def parse(args)
 		# Set the defaults here
-    results = {}
+    results = {
+      :db_name => "istoria-staging",
+    }
 
 		opts = OptionParser.new do |opts|
-			opts.banner = _("Usage: istoria-importdata name [options]")
+			opts.banner = _("Usage: istoria-importdata [options] name key1 value1 key2 value2 ...")
 
-			#opts.separator ""
-			#opts.separator _("Specific options:")
+			opts.separator ""
+			opts.separator _("Specific options:")
+
+			opts.on('-n', "--db-name", _("Database name to import to")) do |x|
+        results[:db_name] = x
+			end
 			
       opts.separator ""
 			opts.separator _("Common options:")
@@ -77,12 +83,14 @@ class IstoriaImportData < Logger::Application
 			end
 		end
 
-    unless (ARGV.count == 1)
+		opts.parse!(args)
+
+    unless (ARGV.count % 2 == 1)  ## Is odd (i.e. name + key-value pairs)
       puts _("name missing; see --help for more info")
       exit
     end
 
-		opts.parse!(args);	results
+    results
 	end
 
 	def run
@@ -100,14 +108,42 @@ class IstoriaImportData < Logger::Application
 			exit
 		end
 
-
-
 		# Reset our logging level because option parsing changed it
 		self.level = $logging_level
 
     ##
     ## DO STUFF HERE
     ##
+
+    to_import = ARGV[0]
+    MongoMapper.database = results[:db_name]
+
+    options = {}
+    key = nil
+    ARGV.unshift.each do |x|
+      unless key
+        key = x
+        next
+      end
+
+      options[key.downcase.to_sym] = x
+      key = nil
+    end
+    
+    importer = Istoria.available_importers.collect {|x| x.new(options)}.find{|x| x.can_import? to_import}
+    unless importer
+      importers_tried = Istoria.available_importers.collect{|x| "'#{x.name}'"}.join(',')
+      log ERROR, "Couldn't find any appropriate importer for '#{to_import}'"
+      log ERROR, "We tried: #{importers_tried}"
+      exit
+    end
+
+    log INFO, "Importing via #{importer.class.name}..."
+    items = importer.import(to_import)
+
+    stats = {}
+    items.each {|x| stats[x.class.name] = (stats[x.class.name] || 0) + 1} 
+    log INFO, "Collected: " + stats.collect {|k,v| "#{k}:#{v}"}.join(",")
 
 		log DEBUG, 'Exiting application'
 	end

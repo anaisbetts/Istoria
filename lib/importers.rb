@@ -18,11 +18,26 @@
 #   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ###########################################################################
 
-require 'types'
 require 'csv'
 require 'cgi'
+require 'open-uri'
+
+require 'lib/types'
 
 module Istoria
+
+  def self.available_importers
+    unless @initialized
+      importers_path = File.join(File.dirname(__FILE__), 'importers')
+      Dir.glob("#{importers_path}/**/*.rb").each {|x| require x}
+      @initialized = true
+    end
+
+    ret = []
+    ObjectSpace.each_object(Class) {|x| ret << x if x.name.include? "Importer"}
+    ret
+  end
+
   module StandardParsers
     def parse_mdy_date(value)
       month, day, year = value.split('/').map{|x| x.to_i}
@@ -51,6 +66,10 @@ module Istoria
     def unescape_html(value)
       CGI.unescapeHTML(value)
     end
+
+    def download_uri(value)
+      open(value)
+    end
   end
 
   module CsvImportImplementation
@@ -64,6 +83,8 @@ module Istoria
 
         raise "Failed" unless self.csv_header_map.keys.all? {|x| to_verify[x]}
       rescue
+        puts $!.message
+        puts $!.backtrace
         return false
       end
 
