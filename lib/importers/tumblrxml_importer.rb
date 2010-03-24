@@ -18,11 +18,12 @@
 #   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ###########################################################################
 
-require 'types'
-require 'importers'
 require 'pathname'
 require 'nokogiri'
 require 'open-uri'
+
+require 'lib/types'
+require 'lib/importers'
 
 include Istoria
 
@@ -46,6 +47,7 @@ class TumblrXmlImporter
     ret += (TumblrLinkParser.new).import(doc)
     ret += (TumblrConversationParser.new).import(doc)
     ret += (TumblrPhotoParser.new).import(doc)
+    ret += (TumblrAudioParser.new).import(doc)
     ret
   end
 end
@@ -60,6 +62,51 @@ module TumblrParsers
   end
 end
 
+class TumblrAudioParser
+  include Istoria::XmlImportImplementation
+
+  XmlHeaderMap = {
+    'audio-caption'  => :text,
+    '@format' => :format,
+    '@url-with-slug' => :original_uri,
+    'audio-player' => :data,
+    '@date-gmt' => :authored_on,
+  }
+
+  XmlDataTransformerMap = {
+    :text => :unescape_html,
+    :format => :parse_tumblr_format,
+    :original_uri => :passthrough,
+    :data => :tumblr_download_audio,
+    :authored_on => :parse_rfc2822_time,
+  }
+
+  def xml_header_map; XmlHeaderMap; end
+  def xml_data_transformer_map; XmlDataTransformerMap; end
+  def xml_event_class; Media; end
+
+  def xml_item_nodename
+    "//post[@type='audio']"
+  end
+
+  def xml_add_fields(item)
+    item[:tags] = [Tag.new(:name => "Tumblr", :type => Tag::SourceType)]
+    item
+  end
+  
+  class << self
+    include TumblrParsers
+
+    def tumblr_download_audio(value)
+      embed_tag = CGI.unescapeHTML(value)
+      download_uri = embed_tag.gsub(/^.*audio_file=(http.*?)&.*$/, '\1')
+      open(download_uri)
+    end
+  end
+end
+
+
+
 class TumblrPhotoParser
   include Istoria::XmlImportImplementation
 
@@ -70,6 +117,7 @@ class TumblrPhotoParser
     'photo-link-url' => :tumblr_link,
     '@date-gmt' => :authored_on,
     '@type' => :tumblr_type,
+    "photo-url[@max-width='1280']" => :data,
   }
 
   XmlDataTransformerMap = {
@@ -79,6 +127,7 @@ class TumblrPhotoParser
     :tumblr_link => :passthrough,
     :authored_on => :parse_rfc2822_time,
     :tumblr_type => :passthrough,
+    :data => :download_uri,
   }
 
   def xml_header_map; XmlHeaderMap; end
@@ -89,16 +138,8 @@ class TumblrPhotoParser
     "//post[@type='photo']"
   end
 
-  def xml_custom_node_parse(node, item)
-    uri = node.xpath("photo-url[@max-width='1280']").text
-    item.data = open(uri)
-    item.save
-    item
-  end
-
   def xml_add_fields(item)
     item[:tags] = [Tag.new(:name => "Tumblr", :type => Tag::SourceType)]
-    item[:text] = item[:original_uri]
     item
   end
   
@@ -116,6 +157,7 @@ class TumblrConversationParser
     '@url-with-slug' => :original_uri,
     '@date-gmt' => :authored_on,
     '@type' => :tumblr_type,
+    'conversation-text' => :text
   }
 
   XmlDataTransformerMap = {
@@ -124,6 +166,7 @@ class TumblrConversationParser
     :original_uri => :passthrough,
     :authored_on => :parse_rfc2822_time,
     :tumblr_type => :passthrough,
+    :text => :unescape_html,
   }
   
   NewLineForFormat = {
@@ -140,19 +183,9 @@ class TumblrConversationParser
     "//post[@type='conversation']"
   end
 
-  def xml_custom_node_parse(node, item)
-    lines = node.xpath("//line").map do |l|
-      "#{l.xpath("@label").text}: #{l.text}#{NewLineForFormat[item[:format]]}"
-    end
-
-    item[:text] = lines.join("\n")
-    item.save
-    item
-  end
-
   def xml_add_fields(item)
     item[:tags] = [Tag.new(:name => "Tumblr", :type => Tag::SourceType)]
-    item[:text] = item[:original_uri]
+    item[:text].gsub!(/\n/m, "#{NewLineForFormat[item[:format]]}\n") + "#{NewLineForFormat[item[:format]]}\n"
     item
   end
   

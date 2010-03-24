@@ -139,8 +139,8 @@ class Media < Event
 
   plugin Grip
 
-  key :text
-  key :format
+  key :text, String
+  key :format, Integer
   attachment :data 
  
   def content_hash

@@ -18,11 +18,13 @@
 #   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ###########################################################################
 
-require 'types'
-require 'importers'
 require 'pathname'
 require 'nokogiri'
 require 'open-uri'
+
+require 'lib/types'
+require 'lib/importers'
+require 'lib/file_cache'
 
 class LastFmListen < Event
   key :song_name, String
@@ -32,18 +34,17 @@ class LastFmListen < Event
   key :image_key, Array
 
   def content_hash
-    Digest::SHA1.hexdigest(self.artist + self.song_name + self.play_count)
+    Digest::SHA1.hexdigest(self.artist + self.song_name + self.play_count.to_s)
   end
 end
 
 Sunspot.setup(LastFmListen) do
-  text :name
+  text :song_name
   text :artist
 end
 
 Sunspot::Adapters::InstanceAdapter.register(MongoInstanceAdapter, LastFmListen)
 Sunspot::Adapters::DataAccessor.register(MongoDataAccessor, LastFmListen)
-
 
 class LastFmXmlImporter
   include Istoria::XmlImportImplementation
@@ -53,13 +54,15 @@ class LastFmXmlImporter
     "artist" => :artist,
     "name" => :song_name,
     "playcount" => :play_count,
+    "image[@size='large']" => :lastfm_image_uri
   }
 
   XmlDataTransformerMap = {
     :original_uri => :passthrough,
     :artist => :unescape_html,
     :song_name => :unescape_html,
-    :play_count => :parse_as_integer,
+    :play_count => :parse_integer,
+    :lastfm_image_uri => :passthrough,
   }
 
   def xml_header_map; XmlHeaderMap; end
@@ -72,9 +75,12 @@ class LastFmXmlImporter
 
   def xml_add_fields(item)
     item[:format] = Message::PlainTextFormat
-    item[:authored_on] = Time.now
+    item[:authored_on] = Time.now  ## XXX: Wrong!
     item[:tags] = [Tag.new(:name => "last.fm", :type => Tag::SourceType)]
-    item[:original_uri] = "http://twitter.com/#{item[:from]}/status/#{item[:twitter_id]}"
+
+    image = FileCache[item[:lastfm_image_uri]] || FileCache.create_from_file(item[:lastfm_image_uri])
+    item[:image_key] = item[:lastfm_image_uri]
+    item.delete(:lastfm_image_uri)
     item
   end
 

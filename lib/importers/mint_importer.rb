@@ -18,8 +18,8 @@
 #   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ###########################################################################
 
-require 'types'
-require 'importers'
+require 'lib/types'
+require 'lib/importers'
 
 class MintEvent < Event
   include TextSupport

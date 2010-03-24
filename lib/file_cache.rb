@@ -18,48 +18,28 @@
 #   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ###########################################################################
 
-require 'pathname'
-require 'nokogiri'
+require 'mongo_mapper'
+require 'grip'
+require 'digest/sha1'
+require 'sunspot'
 require 'open-uri'
 
-require 'lib/types'
-require 'lib/importers/twitterxml_importer'
+class FileCache
+  include MongoMapper::Document
+  plugin Grip
 
-class TwitterImporter
-  def initialize(options = {})
-    @opts = options
+  key :key, String
+  attachment :data
+  timestamps!
+
+  validates_uniqueness_of :key
+
+  def self.create_from_file(file_or_uri)
+    fc = FileCache.create(:key => file_or_uri, :data => open(file_or_uri))
   end
 
-  def can_import?(name)
-    ti = TwitterXmlImporter.new
-    ti.can_import?(name_to_url(name, 0))
+  def self.[](key)
+    ret = FileCache.find(:key => key)
+    ret ? ret.first : nil
   end
-
-  def import(name)
-    since_id = @opts[:since_id] || 0
-    page = 1
-    ti = TwitterXmlImporter.new
-
-    while(ti.can_import?(name_to_url(name, page, since_id))) do
-      ti.import(name_to_url(name, page, since_id))
-      page += 1
-      break if @opts[:limit] and @opts[:limit] < page
-    end
-  end
-
-  def xml_add_fields(item)
-    item[:tags] = [Tag.new(:name => "Twitter", :type => Tag::SourceType)]
-    item
-  end
-
-private
-
-  def name_to_url(name, page = 0, since_id = 0)
-    if (since_id > 0)
-      "http://api.twitter.com/1/statuses/user_timeline.xml?screen_name=#{name}&page=#{page}&since_id=#{since_id}"
-    else
-      "http://api.twitter.com/1/statuses/user_timeline.xml?screen_name=#{name}&page=#{page}"
-    end
-  end
-  
 end

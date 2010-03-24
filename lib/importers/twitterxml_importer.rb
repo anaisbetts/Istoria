@@ -18,11 +18,12 @@
 #   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ###########################################################################
 
-require 'types'
-require 'importers'
 require 'pathname'
 require 'nokogiri'
 require 'open-uri'
+
+require 'lib/types'
+require 'lib/importers'
 
 class TwitterXmlImporter
   include Istoria::XmlImportImplementation

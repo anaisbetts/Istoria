@@ -124,29 +124,32 @@ module Istoria
         doc = XmlImportImplementation.open_file_or_url(target)
         items = doc.xpath(self.xml_item_nodename)
 
-        return self.xml_header_map.keys.all? {|k| not items.xpath(k).empty? }
+        return self.xml_header_map.keys.all? { |k| not items.xpath(k).empty? }
       rescue
         p $!.message
         return false
       end
     end
 
-    def xml_custom_node_parse(node, item); item; end
+    def xml_custom_parser_map; {}; end
 
     def import(target)
       doc = XmlImportImplementation.open_file_or_url(target)
 
-      items = doc.xpath("//#{self.xml_item_nodename}")
+      items = doc.xpath(self.xml_item_nodename)
       ret = items.map do |node|
         current = {}
-        self.xml_header_map.each do |k,v| 
-          data = node.xpath(k).text
-          current[v] = self.class.send(self.xml_data_transformer_map[v], data)
+        self.xml_header_map.each do |path,prop_name| 
+          data = node.xpath(path).text
+          current[prop_name] = self.class.send(self.xml_data_transformer_map[prop_name], data)
         end
 
-        ret = self.xml_event_class.create(self.xml_add_fields(current))
-        self.xml_custom_node_parse(node, ret)
-        ret
+        self.xml_custom_parser_map.each do |path,parse_func|
+          this_node = node.xpath(path)
+          current.merge! self.class.send(parse_func, this_node)
+        end
+
+        self.xml_event_class.create(self.xml_add_fields(current))
       end
     end
 

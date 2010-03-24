@@ -22,15 +22,14 @@ module Grip
 
       define_method("#{name}=") do |file|
         self["#{name}_id"]   = Mongo::ObjectID.new
-        self["#{name}_size"] = File.size(file)
-        self["#{name}_type"] = Wand.wave(file.path)
+        self["#{name}_size"] = Grip.file_size(file)
+        self["#{name}_type"] = Grip.file_type(file)
         self["#{name}_hash"] = Grip.hash_for_file(file)
         self["#{name}_name"] = if file.respond_to?(:original_filename)
           file.original_filename
         else
-          File.basename(file.path)
+          File.basename(file.path || "")
         end
-        #self["#{name}_hash"] = 
         self.class.attachment_definitions[name] = file
       end
     end
@@ -52,7 +51,21 @@ module Grip
           content_type = self["#{name}_type"]
 
           if file.respond_to?(:read)
-            self.class.grid.put(file.read, self["#{name}_name"], :content_type => content_type, :_id => self["#{name}_id"])
+#             self.class.grid.open(self["#{name}_name"], 'w', :content_type => content_type, :_id => self["#{name}_id"]) do |out|
+#               buf = nil
+#               while((buf = file.read(4096)) != nil) do
+#                 out.write buf
+#               end
+#             end
+
+            begin
+              file.seek(0)
+              self.class.grid.put(file.read, self["#{name}_name"], :content_type => content_type, :_id => self["#{name}_id"])
+            rescue
+              puts $!.message
+              puts $!.backtrace
+              raise $!
+            end
           end
         end
       end
@@ -62,6 +75,18 @@ module Grip
           self.class.grid.delete(self["#{name}_id"])
         end
       end
+  end
+
+  def self.file_size(f)
+    return f.size if f.respond_to? :size
+    File.size(file)
+  end
+
+  def self.file_type(f)
+    ret = f.content_type if f.respond_to? :content_type else Wand.wave(f.path)
+    p f.class
+    puts ret
+    ret
   end
 
   def self.hash_for_file(f)
