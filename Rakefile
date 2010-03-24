@@ -3,7 +3,7 @@ $:.unshift(File.join(File.dirname(__FILE__), 'lib'))
 require 'cucumber/rake/task'
 
 Cucumber::Rake::Task.new do |t|
-    t.cucumber_opts = %w{--format pretty} + (ENV["tags"] ? ["--tags #{ENV["tags"]}"] : [])
+    t.cucumber_opts = %w{--format pretty} + (ENV["TAGS"] ? ["--tags", "#{ENV["TAGS"]}"] : [])
 end
 
 # Vagrant brilliantly uses a C library to parse its JSON config files
@@ -24,7 +24,7 @@ end
 
 task :db do
   `sunspot-solr start --data-directory=tmp/dev_db/solr`
-  system("mongod --dbpath tmp/dev_db")
+  system("mongod --dbpath tmp/dev_db -vvv")
   `sunspot-solr stop`
 end
 
