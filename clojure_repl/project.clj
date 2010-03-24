@@ -2,7 +2,8 @@
               :description "Test"
               :repositories {"incanter" "http://repo.incanter.org"}
               :dependencies [[org.incanter/incanter-full "1.2.0-SNAPSHOT"]]
-              :dev-dependencies [[org.clojars.brandonw/lein-nailgun "1.0.0"]]
+              :dev-dependencies [[org.clojars.brandonw/lein-nailgun "1.0.0"]
+                                 [org.clojars.gilbertl/vimclojure "2.1.2"]]
   )
 
 """ 
