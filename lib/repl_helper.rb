@@ -1,3 +1,4 @@
+require 'lib/boot'
 require 'lib/types'
 require 'lib/importers'
 

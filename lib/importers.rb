@@ -18,6 +18,7 @@
 #   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ###########################################################################
 
+require 'lib/boot'
 require 'csv'
 require 'cgi'
 require 'open-uri'

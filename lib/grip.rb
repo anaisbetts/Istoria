@@ -1,3 +1,4 @@
+require 'lib/boot'
 require 'mime/types'
 require 'wand'
 
@@ -83,7 +84,7 @@ module Grip
   end
 
   def self.file_type(f)
-    ret = f.content_type if f.respond_to? :content_type else Wand.wave(f.path)
+    ret = f.respond_to? :content_type ? f.content_type : Wand.wave(f.path)
     p f.class
     puts ret
     ret

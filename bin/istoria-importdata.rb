@@ -20,10 +20,9 @@
 #   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ###########################################################################
 
-$:.unshift File.join(File.dirname(__FILE__), "..")
+require File.join(File.dirname(__FILE__), "..", "lib", "boot")
 
 # Standard library
-require 'rubygems'
 require 'logger'
 require 'optparse'
 require 'optparse/time'

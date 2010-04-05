@@ -18,11 +18,13 @@
 #   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ###########################################################################
 
+require 'lib/boot'
 require 'mongo_mapper'
-require 'grip'
 require 'digest/sha1'
 require 'sunspot'
 require 'open-uri'
+
+require 'lib/grip'
 
 class FileCache
   include MongoMapper::Document

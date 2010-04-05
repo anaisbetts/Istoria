@@ -18,8 +18,10 @@
 #   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ###########################################################################
 
+require 'lib/boot'
+
 require 'mongo_mapper'
-require 'grip'
+require 'lib/grip'
 require 'digest/sha1'
 require 'sunspot'
 

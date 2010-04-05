@@ -18,50 +18,19 @@
 #   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ###########################################################################
 
-require 'lib/boot'
-
-require 'pathname'
-require 'nokogiri'
-require 'open-uri'
-
-require 'lib/types'
-require 'lib/importers/twitterxml_importer'
-
-class TwitterImporter
-  def initialize(options = {})
-    @opts = options
+unless $istoria_already_booted
+  begin
+    # Try to require the preresolved locked set of gems.
+    require File.expand_path('../.bundle/environment', __FILE__)
+  rescue LoadError
+    # Fall back on doing an unlocked resolve at runtime.
+    require "rubygems"
+    require "bundler"
+    Bundler.setup
   end
 
-  def can_import?(name)
-    ti = TwitterXmlImporter.new
-    ti.can_import?(name_to_url(name, 0))
-  end
+  # Always include the Istoria root path
+  $:.unshift File.join(File.dirname(__FILE__), "..")
 
-  def import(name)
-    since_id = @opts[:since_id] || 0
-    page = 1
-    ti = TwitterXmlImporter.new
-
-    while(ti.can_import?(name_to_url(name, page, since_id))) do
-      ti.import(name_to_url(name, page, since_id))
-      page += 1
-      break if @opts[:limit] and @opts[:limit] < page
-    end
-  end
-
-  def xml_add_fields(item)
-    item[:tags] = [Tag.new(:name => "Twitter", :type => Tag::SourceType)]
-    item
-  end
-
-private
-
-  def name_to_url(name, page = 0, since_id = 0)
-    if (since_id > 0)
-      "http://api.twitter.com/1/statuses/user_timeline.xml?screen_name=#{name}&page=#{page}&since_id=#{since_id}"
-    else
-      "http://api.twitter.com/1/statuses/user_timeline.xml?screen_name=#{name}&page=#{page}"
-    end
-  end
-  
+  $istoria_already_booted = true
 end
