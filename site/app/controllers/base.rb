@@ -19,7 +19,6 @@ Site.controllers :base do
   # end
 
   get :index, :map => "/" do
-    "Hello World!"
+    render 'base/index'
   end
-  
 end
