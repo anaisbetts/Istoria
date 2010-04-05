@@ -1,10 +1,31 @@
+source :rubygems
 source :gemcutter
 
+# Core requirements
 gem "mongo_mapper"
 gem "mongo_ext"
 gem "wand"
 gem "sunspot"
-gem "cucumber"
+
+##
+## Site Section
+## 
+
+# Project requirements
+gem 'rake'
+gem 'rack-flash'
+gem 'thin' # or mongrel
+
+# Component requirements
+gem 'haml'
 gem "googlecharts"
-gem "sinatra"
-gem "haml"
+
+# Test requirements
+gem 'rr', :group => "test"
+gem 'rspec', :require => "spec", :group => "test"
+gem 'capybara', :group => "test"
+gem 'cucumber', :group => "test"
+gem 'rack-test', :require => 'rack/test', :group => 'test'
+
+# Padrino
+gem 'padrino', "0.9.9"
