@@ -2,9 +2,7 @@ source :rubygems
 source :gemcutter
 
 # Core requirements
-gem "mongo_mapper"
-gem "mongo_ext"
-gem "wand"
+gem "candy", :path => "./vendor/candy"
 gem "sunspot"
 
 ##

@@ -1,0 +1,3 @@
+[submodule "vendor/candy"]
+	path = vendor/candy
+	url = git@github.com:xpaulbettsx/candy.git
