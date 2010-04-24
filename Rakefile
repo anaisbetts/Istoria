@@ -7,10 +7,10 @@ Cucumber::Rake::Task.new do |t|
 end
 
 # Vagrant brilliantly uses a C library to parse its JSON config files
-unless defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby" 
-  require 'vagrant'
-  Vagrant::Env.load!
-end
+# unless defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby" 
+#   require 'vagrant'
+#   Vagrant::Env.load!
+# end
 
 task :test => [
   :cucumber

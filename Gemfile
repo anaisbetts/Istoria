@@ -2,7 +2,10 @@ source :rubygems
 source :gemcutter
 
 # Core requirements
-gem "candy", :path => "./vendor/candy"
+# gem "mongo"
+# gem "mongo_ext"
+# gem "bson_ext"
+# gem "candy", :path => "./vendor/candy"
 gem "sunspot"
 
 ##
