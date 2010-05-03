@@ -30,11 +30,6 @@ class Tag
   #key :location, Array
   #key :name, String
   #key :type, Integer
-
-  def type_sym
-    return :source if self.type == SourceType
-    :other
-  end
 end
 
 

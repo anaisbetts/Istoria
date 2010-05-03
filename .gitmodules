@@ -1,6 +1,3 @@
 [submodule "vendor/gridfs-fuse"]
 	path = vendor/gridfs-fuse
 	url = git@github.com:xpaulbettsx/gridfs-fuse.git
-[submodule "vendor/candy"]
-	path = vendor/candy
-	url = http://github.com/SFEley/candy.git
