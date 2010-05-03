@@ -20,4 +20,21 @@
 
 require 'lib/boot'
 
+require 'digest/sha1'
+require 'sunspot'
+
+class Tag
+  OtherType = 1
+  SourceType = 2
+
+  #key :location, Array
+  #key :name, String
+  #key :type, Integer
+
+  def type_sym
+    return :source if self.type == SourceType
+    :other
+  end
+end
+
 

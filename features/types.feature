@@ -30,7 +30,7 @@ Feature: We need a basic type system to organize the data that we want to collec
 		And the "content_hash" property's string length should be "64"
 		And the fixture should have a "location" property of type "Array"
 		And the fixture should have an "original_uri" property of type "String"
-		And the fixture should have many embedded Tags
+		And the fixture should have many embedded tags
 		And the fixture should have timestamps
 
 	Scenario: Content hash should change on new tag
